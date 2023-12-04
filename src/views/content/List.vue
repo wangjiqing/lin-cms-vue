@@ -2,7 +2,7 @@
   <div class="container">
     <div class="title">期刊内容列表</div>
     <div class="add-bottom">
-      <el-button type="primary">新增内容</el-button>
+      <el-button type="primary" @click="handleAdd">添加内容</el-button>
     </div>
     <div class="table-container">
       <el-table :data="contentList">
@@ -37,15 +37,61 @@
         </el-table-column>
       </el-table>
     </div>
+    <el-dialog
+        :title="dialogTitle"
+        width="800px"
+        :visible.sync="showDialog"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        @close="resetForm"
+    >
+      <el-form ref="form" :model="temp" able-width="90px" :rules="rules">
+        <el-form-item label="内容封面" prop="image">
+          <upload-imgs ref="uploadEle" :value="contentImgData" :max-num="1"></upload-imgs>
+        </el-form-item>
+        <el-form-item label="内容类型" prop="type">
+          <el-radio v-model="temp.type" :label="100">电影</el-radio>
+          <el-radio v-model="temp.type" :label="200">音乐</el-radio>
+          <el-radio v-model="temp.type" :label="300">句子</el-radio>
+        </el-form-item>
+        <el-form-item label="内容标题" prop="title">
+          <el-col :span="11">
+            <el-input v-model="temp.title"></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="内容介绍" prop="content">
+          <el-col :span="11">
+            <el-input type="textarea" :rows="2" v-model="temp.content"></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="音乐外链" prop="url">
+          <el-col :span="11">
+            <el-input v-model="temp.url"></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="发布时间" prop="pubdate">
+          <el-date-picker v-model="temp.pubdate" type="date" placeholder="选择日期"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="有效状态">
+          <el-switch v-model="temp.status" :active-value="1" :inactive-value="0"></el-switch>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showDialog = false">取 消</el-button>
+        <el-button type="primary" @click="dialogTitle === '添加内容' ? confirmAdd() :confirmEdit()">保 存</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
-<script setup>
+<script>
 
 import Content from '@/models/content'
+import UploadImgs from '@/components/base/upload-imgs/index.vue'
 
 export default {
   name: 'List',
+  components: { UploadImgs },
   data() {
     return {
       contentList: [],
@@ -53,7 +99,28 @@ export default {
         100: '电影',
         200: '音乐',
         300: '句子'
-      }
+      },
+      dialogTitle: '',
+      showDialog: false,
+      temp: {
+        id: null,
+        image: null,
+        type: null,
+        title: null,
+        content: null,
+        url: null,
+        pubdate: '',
+        status: ''
+      },
+      rules: {
+        image: [{ required: true, message: '内容封面不能为空', trigger: 'blur' }],
+        type: [{ required: true, message: '请指定内容类型', trigger: 'blur' }],
+        title: [{ required: true, message: '内容标题不能为空', trigger: 'blur' }],
+        content: [{ required: true, message: '内容介绍不能为空', trigger: 'blur' }],
+        url: [{ message: 'url格式不正确', trigger: 'blur' }],
+        pubdate: [{ required: true, message: '内容封面不能为空', trigger: 'blur' }]
+      },
+      contentImgData: []
     }
   },
   created() {
@@ -63,12 +130,33 @@ export default {
     async getContentList() {
       this.contentList = await Content.getContentList()
     },
+    handleAdd() {
+      this.dialogTitle = '添加内容'
+      this.showDialog = true
+    },
     handleEdit() {
-      alert('编辑')
     },
     handleDelete() {
-      alert('删除')
-    }
+    },
+    resetForm() {
+      this.contentImgData = []
+      this.$refs.form.resetFields()
+    },
+    async confirmAdd() {
+      const images = await this.$refs.uploadEle.getValue()
+      this.temp.image = images.length < 1 ? '' : images[0].src
+
+      this.$refs.form.validate(async valid => {
+        if (valid) {
+          delete this.temp.id
+          const res = await Content.addContent(this.temp)
+          this.showDialog = false
+          this.$message.success(res.message)
+          this.getContentList()
+        }
+      })
+    },
+    confirmEdit() {}
   }
 }
 </script>
