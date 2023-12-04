@@ -31,8 +31,14 @@
         </el-table-column>
         <el-table-column label="操作" fixed="right">
           <template v-slot="scope">
-            <el-button @click="handleEdit(scope.row)" v-permission="{ permission: '编辑内容', type: 'disabled' }">编辑</el-button>
-            <el-button type="danger" @click="handleDelete(scope.row)" v-permission="{ permission: '删除内容', type: 'disabled' }">删除</el-button>
+            <el-button @click="handleEdit(scope.row)"
+                       v-permission="{ permission: '编辑内容', type: 'disabled' }">
+              编辑
+            </el-button>
+            <el-button type="danger" @click="handleDelete(scope.row)"
+                       v-permission="{ permission: '删除内容', type: 'disabled' }">
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -50,9 +56,9 @@
           <upload-imgs ref="uploadEle" :value="contentImgData" :max-num="1"></upload-imgs>
         </el-form-item>
         <el-form-item label="内容类型" prop="type">
-          <el-radio v-model="temp.type" :label="100">电影</el-radio>
-          <el-radio v-model="temp.type" :label="200">音乐</el-radio>
-          <el-radio v-model="temp.type" :label="300">句子</el-radio>
+          <el-radio v-model="temp.type" :disabled="dialogTitle === '编辑内容'" :label="100">电影</el-radio>
+          <el-radio v-model="temp.type" :disabled="dialogTitle === '编辑内容'" :label="200">音乐</el-radio>
+          <el-radio v-model="temp.type" :disabled="dialogTitle === '编辑内容'" :label="300">句子</el-radio>
         </el-form-item>
         <el-form-item label="内容标题" prop="title">
           <el-col :span="11">
@@ -134,7 +140,20 @@ export default {
       this.dialogTitle = '添加内容'
       this.showDialog = true
     },
-    handleEdit() {
+    handleEdit(row) {
+      this.dialogTitle = '编辑内容'
+      this.showDialog = true
+
+      this.temp.id = row.id
+      this.temp.image = row.image
+      this.temp.type = row.type
+      this.temp.title = row.title
+      this.temp.content = row.content
+      this.temp.url = row.url
+      this.temp.pubdate = row.pubdate
+      this.temp.status = row.status
+
+      this.contentImgData.push({ display: row.image })
     },
     handleDelete() {
     },
@@ -156,7 +175,20 @@ export default {
         }
       })
     },
-    confirmEdit() {}
+    async confirmEdit() {
+      const images = await this.$refs.uploadEle.getValue()
+      // 编辑的时候取 display 的路径
+      this.temp.image = images.length < 1 ? '' : images[0].display
+
+      this.$refs.form.validate(async valid => {
+        if (valid) {
+          const res = await Content.editContent(this.temp.id, this.temp)
+          this.showDialog = false
+          this.$message.success(res.message)
+          this.getContentList()
+        }
+      })
+    }
   }
 }
 </script>
