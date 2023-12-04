@@ -1,4 +1,4 @@
-import { get, post, put } from 'lin/plugins/axios'
+import { _delete, get, post, put } from 'lin/plugins/axios'
 
 class Content {
   async getContentList() {
@@ -11,6 +11,10 @@ class Content {
 
   async editContent(id, data) {
     return put(`v1/content/${id}`, { ...data })
+  }
+
+  async delContent(id, type) {
+    return _delete(`v1/content/${id}`, { type })
   }
 }
 

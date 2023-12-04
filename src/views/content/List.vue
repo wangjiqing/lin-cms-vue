@@ -87,6 +87,15 @@
         <el-button type="primary" @click="dialogTitle === '添加内容' ? confirmAdd() :confirmEdit()">保 存</el-button>
       </span>
     </el-dialog>
+    <el-dialog title="提示"
+               :visible.sync="showDeleteDialog"
+               width="400px">
+      <span>确认删除内容？</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showDeleteDialog = false">取 消</el-button>
+        <el-button type="danger" @click="confirmDelete">删 除</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -126,7 +135,8 @@ export default {
         url: [{ message: 'url格式不正确', trigger: 'blur' }],
         pubdate: [{ required: true, message: '内容封面不能为空', trigger: 'blur' }]
       },
-      contentImgData: []
+      contentImgData: [],
+      showDeleteDialog: false
     }
   },
   created() {
@@ -154,8 +164,6 @@ export default {
       this.temp.status = row.status
 
       this.contentImgData.push({ display: row.image })
-    },
-    handleDelete() {
     },
     resetForm() {
       this.contentImgData = []
@@ -188,6 +196,18 @@ export default {
           this.getContentList()
         }
       })
+    },
+    handleDelete(row) {
+      this.showDeleteDialog = true
+      // id, type
+      this.temp.id = row.id
+      this.temp.type = row.type
+    },
+    async confirmDelete() {
+      this.showDeleteDialog = false
+      const res = await Content.delContent(this.temp.id, this.temp.type)
+      this.$message.success(res.message)
+      await this.getContentList()
     }
   }
 }
