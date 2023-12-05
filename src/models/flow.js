@@ -1,4 +1,4 @@
-import { get, post, put } from 'lin/plugins/axios'
+import { _delete, get, post, put } from 'lin/plugins/axios'
 
 class Flow {
   async getFlowList() {
@@ -11,6 +11,10 @@ class Flow {
 
   async editFlow(id, index, type, art_id, status) {
     return put(`v1/flow/${id}`, { index, type, art_id, status })
+  }
+
+  async delFlow(id) {
+    return _delete(`v1/flow/${id}`)
   }
 }
 

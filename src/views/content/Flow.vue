@@ -50,6 +50,13 @@
         <el-button type="primary" @click="dialogTitle === '添加期刊' ? confirmAdd() : confirmEdit()">保 存</el-button>
       </span>
     </el-dialog>
+    <el-dialog title="提示" :visible.sync="showDeleteDialog" width="400px">
+      <span>确认删除期刊？</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showDeleteDialog = false">取 消</el-button>
+        <el-button type="danger" @click="confirmDelete">删 除</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -69,6 +76,7 @@ export default {
       },
       dialogTitle: '',
       showDialog: false,
+      showDeleteDialog: false,
       id: null,
       temp: {
         art: [],
@@ -137,7 +145,10 @@ export default {
       this.showDialog = true
       this.getContentOptions()
     },
-    handleDelete() {},
+    handleDelete(id) {
+      this.showDeleteDialog = true
+      this.id = id
+    },
     resetForm() {
       this.$refs.form.resetFields()
     },
@@ -162,6 +173,12 @@ export default {
           this.resetForm()
         }
       })
+    },
+    async confirmDelete() {
+      const res = await Flow.delFlow(this.id)
+      this.$message.success(res.message)
+      this.showDeleteDialog = false
+      this.getFlowList()
     }
   }
 }
