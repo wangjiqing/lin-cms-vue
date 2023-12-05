@@ -15,7 +15,17 @@ const contentRouter = {
       filePath: 'views/content/List',
       inNav: true,
       icon: 'iconfont icon-tushuguanli',
+    },
+    {
+      title: '最新期刊',
+      type: 'view',
+      name: 'flow',
+      route: '/content/flow',
+      filePath: 'views/content/Flow',
+      inNav: true,
+      icon: 'iconfont icon-tushuguanli',
     }
+
   ],
 }
 
