@@ -29,11 +29,33 @@
         </el-table-column>
       </el-table>
     </div>
+    <el-dialog :title="dialogTitle"
+               :visible.sync="showDialog"
+               :close-on-click-modal="false"
+               :close-on-press-escape="false"
+               @click="resetForm">
+      <el-form ref="form" :model="temp" label-width="90px" :rules="rules">
+        <el-form-item label="排序" prop="index">
+          <el-input-number v-model="temp.index" :min="1"></el-input-number>
+        </el-form-item>
+        <el-form-item label="期刊内容" prop="art">
+          <el-cascader v-model="temp.art" :options="options"></el-cascader>
+        </el-form-item>
+        <el-form-item label="是否展示" prop="status">
+          <el-switch v-model="temp.status" :active-value="1" :inactive-value="0"></el-switch>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showDialog = false">取 消</el-button>
+        <el-button type="primary" @click="dialogTitle === '添加期刊' ? confirmAdd() : confirmEdit()">保 存</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import Flow from '@/models/flow'
+import Content from '@/models/content'
 
 export default {
   name: 'Flow',
@@ -44,7 +66,18 @@ export default {
         100: '电影',
         200: '音乐',
         300: '句子'
-      }
+      },
+      dialogTitle: '',
+      showDialog: false,
+      temp: {
+        art: [],
+        index: 1,
+        status: 1
+      },
+      rules: {
+        art: [{ required: true, message: '期刊内容不能问空', trigger: 'blur' }]
+      },
+      options: []
     }
   },
   created() {
@@ -55,14 +88,61 @@ export default {
       this.tableData = await Flow.getFlowList()
     },
     handleAdd() {
-
+      this.dialogTitle = '添加期刊'
+      this.showDialog = true
+      this.getContentOptions()
     },
-    handleEdit() {
-
+    async getContentOptions() {
+      // 获取所有期刊内容
+      const content = await Content.getContentList()
+      // 格式化数据
+      this.options = this._generateOptionsData(content)
     },
-    handleDelete() {
-
-    }
+    _generateOptionsData(data) {
+      // 删选出分类
+      let types = []
+      data.forEach(d => types.push(d.type))
+      // 去重
+      types = Array.from(new Set(types))
+      // 构建一级分类选项
+      const options = types.map(t => ({
+        value: t,
+        label: this.type[t],
+        children: []
+      }))
+      // 向分类中填数据
+      options.forEach((o, index) => {
+        const children = []
+        data.forEach(d => {
+          if (d.type === o.value) {
+            children.push({
+              value: d.id,
+              label: d.title,
+              disabled: !d.status
+            })
+          }
+        })
+        options[index].children = children
+      })
+      return options
+    },
+    handleEdit() {},
+    handleDelete() {},
+    resetForm() {
+      this.$refs.form.resetFields()
+    },
+    confirmAdd() {
+      this.$refs.form.validate(async valid => {
+        if (valid) {
+          const res = await Flow.addContentToFlow(this.temp.index,this.temp.art[0], this.temp.art[1], this.temp.status)
+          this.$message.success(res.message)
+          this.showDialog = false
+          await this.getFlowList()
+          this.resetForm()
+        }
+      })
+    },
+    confirmEdit() {}
   }
 }
 </script>
