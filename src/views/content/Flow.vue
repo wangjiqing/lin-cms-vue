@@ -69,6 +69,7 @@ export default {
       },
       dialogTitle: '',
       showDialog: false,
+      id: null,
       temp: {
         art: [],
         index: 1,
@@ -91,6 +92,7 @@ export default {
       this.dialogTitle = '添加期刊'
       this.showDialog = true
       this.getContentOptions()
+      this.resetForm()
     },
     async getContentOptions() {
       // 获取所有期刊内容
@@ -126,7 +128,15 @@ export default {
       })
       return options
     },
-    handleEdit() {},
+    handleEdit(row) {
+      this.id = row.id
+      this.temp.index = row.index
+      this.temp.art = [row.detail.type, row.detail.id]
+      this.temp.status = row.status
+      this.dialogTitle = '编辑期刊'
+      this.showDialog = true
+      this.getContentOptions()
+    },
     handleDelete() {},
     resetForm() {
       this.$refs.form.resetFields()
@@ -134,7 +144,7 @@ export default {
     confirmAdd() {
       this.$refs.form.validate(async valid => {
         if (valid) {
-          const res = await Flow.addContentToFlow(this.temp.index,this.temp.art[0], this.temp.art[1], this.temp.status)
+          const res = await Flow.addContentToFlow(this.temp.index, this.temp.art[0], this.temp.art[1], this.temp.status)
           this.$message.success(res.message)
           this.showDialog = false
           await this.getFlowList()
@@ -142,7 +152,17 @@ export default {
         }
       })
     },
-    confirmEdit() {}
+    confirmEdit() {
+      this.$refs.form.validate(async valid => {
+        if (valid) {
+          const res = await Flow.editFlow(this.id, this.temp.index, this.temp.art[0], this.temp.art[1], this.temp.status)
+          this.$message.success(res.message)
+          this.showDialog = false
+          await this.getFlowList()
+          this.resetForm()
+        }
+      })
+    }
   }
 }
 </script>
