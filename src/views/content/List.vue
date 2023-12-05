@@ -2,7 +2,7 @@
   <div class="container">
     <div class="title">期刊内容列表</div>
     <div class="add-bottom">
-      <el-button type="primary" @click="handleAdd">添加内容</el-button>
+      <el-button type="primary" @click="handleAdd" v-permission="'添加期刊内容'">添加内容</el-button>
     </div>
     <div class="table-container">
       <el-table :data="contentList">
@@ -32,11 +32,11 @@
         <el-table-column label="操作" fixed="right">
           <template v-slot="scope">
             <el-button @click="handleEdit(scope.row)"
-                       v-permission="{ permission: '编辑内容', type: 'disabled' }">
+                       v-permission="{ permission: '编辑期刊内容', type: 'disabled' }">
               编辑
             </el-button>
             <el-button type="danger" @click="handleDelete(scope.row)"
-                       v-permission="{ permission: '删除内容', type: 'disabled' }">
+                       v-permission="{ permission: '删除期刊内容', type: 'disabled' }">
               删除
             </el-button>
           </template>

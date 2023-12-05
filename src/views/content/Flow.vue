@@ -24,7 +24,7 @@
         <el-table-column label="操作">
           <template v-slot="scope">
             <el-button @click="handleEdit(scope.row)" v-permission="'编辑最新期刊列表'">编辑</el-button>
-            <el-button type="danger" @click="handleDelete(scope.row.id)" v-permission="'删除最新期刊列表编辑'">删除</el-button>
+            <el-button type="danger" @click="handleDelete(scope.row.id)" v-permission="'最新期刊列表内容删除'">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
